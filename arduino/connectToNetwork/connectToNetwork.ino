@@ -19,7 +19,7 @@ void setup() {
   } 
   // if you are connected, print out info about the connection:
   else {
-    Serial.println("Connected to networka");
+    Serial.println("Connected to network");
   }
 }
 
