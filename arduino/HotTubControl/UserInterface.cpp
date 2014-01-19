@@ -1,7 +1,7 @@
 #include "UserInterface.h"
 
 char displayString[10];
-      // will store last time LED was updated
+// will store last time LED was updated
 long displayInterval = 100;            //10 HZ loop
 
 SoftwareSerial s7s(DISPLAY_RX_PIN, DISPLAY_TX_PIN);
@@ -9,10 +9,10 @@ SoftwareSerial s7s(DISPLAY_RX_PIN, DISPLAY_TX_PIN);
 void InitUserInterface()
 {
   // serial for comms with 7-segment display
-  
+
   s7s.begin(9600);
   clearDisplay();
-  
+
   //Setup the LED
   pinMode(LED_PIN,OUTPUT);
 }
@@ -20,10 +20,10 @@ void InitUserInterface()
 
 void UpdateUserInterface(HotTub *ht)
 {
-    unsigned long currentMillis = millis();
-    static long previousMillis = 0;  
-    
-    if(currentMillis - previousMillis > displayInterval) {
+  unsigned long currentMillis = millis();
+  static long previousMillis = 0;  
+
+  if(currentMillis - previousMillis > displayInterval) {
     // save the last time you blinked the LED 
     previousMillis = currentMillis;   
 
@@ -39,17 +39,17 @@ void UpdateUserInterface(HotTub *ht)
     // This will output the tempString to the S7S
     s7s.print(displayString);
     setDecimals(0b00000000);  // Sets digit 3 decimal on
-    }
-    
-    //========================================================================
-    // Turn on or off the LED for debugging buttons/shits and giggles
-    //  if (( value1 == LOW) || ( value2 == LOW) || ( value3 == LOW) || ( value4 == LOW))  {
-    if (ht->tempUpHit  == LOW)   {
-      digitalWrite(LED_PIN, HIGH );
-    } 
-    else {
-      digitalWrite(LED_PIN, LOW );
-    }
+  }
+
+  //========================================================================
+  // Turn on or off the LED for debugging buttons/shits and giggles
+  //  if (( value1 == LOW) || ( value2 == LOW) || ( value3 == LOW) || ( value4 == LOW))  {
+  if (ht->tempUpHit  == LOW)   {
+    digitalWrite(LED_PIN, HIGH );
+  } 
+  else {
+    digitalWrite(LED_PIN, LOW );
+  }
 }
 //========================================================================
 // 7-segment display functions
@@ -80,4 +80,5 @@ void setDecimals(byte decimals)
   s7s.write(0x77);
   s7s.write(decimals);
 }
+
 

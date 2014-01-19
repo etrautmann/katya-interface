@@ -10,8 +10,12 @@
 //
 //void printWifiStatus();
 
-void parseReturnCsv(WiFiClient client, HotTub *ht);
+//void pullStateFromServer(WiFiClient client, HotTub *ht);
 
 void parseReturnJson(WiFiClient client, HotTub *ht); 
+
+//void httpRequest(WiFiClient client, char* server);
+
+//void printWifiStatus();
 
 #endif

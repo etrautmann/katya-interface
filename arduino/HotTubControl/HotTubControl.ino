@@ -5,28 +5,36 @@
 
 #include <SPI.h>
 #include <WiFi.h>
+#include <OneWire.h> 
 //#include <json_arduino.h>
 #include "HotTubGlobals.h"
 #include "RealtimeControl.h"
+#include "TempSense.h"
 #include "UserInput.h"
 #include "UserInterface.h"
 #include "serverInterface.h"
 
 
+boolean debug = true;
 
+String currentLine;
 static HotTub ht;
 
-//char ssid[] = "SHWAYDAR";    //  your network SSID (name) 
-//char pass[] = "typethatpasswordformebaby";    // your network password
+//Temperature chip i/o
+int DS18S20_Pin = 14; //DS18S20 Signal pin on digital 2
+OneWire ds(DS18S20_Pin);  // on digital pin 2
+
 
 // server address:
 char server[] = "katyakrunktank.herokuapp.com";
 
 int startPos;
 char inChar;
-char ssid[] = "799 Seneca";    //  your network SSID (name) 
-char pass[] = "welcome123";    // your network password
-String currentLine = "";               // string to hold the text from server
+char ssid[] = "SHWAYDAR";    //  your network SSID (name) 
+char pass[] = "typethatpasswordformebaby";    // your network password
+//char ssid[] = "799 Seneca";    //  your network SSID (name) 
+//char pass[] = "welcome123";    // your network password
+//String currentLine = "";               // string to hold the text from server
 char jsonBuff[128];
 
 String parseVal1;
@@ -40,10 +48,9 @@ int status = WL_IDLE_STATUS;
 // Initialize the Wifi client library
 WiFiClient client;
 
-
 unsigned long lastConnectionTime = 0;           // last time you connected to the server, in milliseconds
 boolean lastConnected = false;                  // state of the connection last time through the main loop
-const unsigned long postingInterval = 3*1000;  // delay between updates, in milliseconds
+const unsigned long postingInterval = 4*1000;  // delay between updates, in milliseconds
 
 
 //================================================================================
@@ -75,9 +82,7 @@ void setup() {
 
   //Initialize serial and wait for port to open:
   Serial.begin(9600); 
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for Leonardo only
-  }
+
 
   // check for the presence of the shield:
   if (WiFi.status() == WL_NO_SHIELD) {
@@ -111,23 +116,24 @@ void loop() {
   //======================================================
   // READ USER INPUTS. AFAP
     // Read button states
-    GetButtonStates(&ht);
-    // Read current temp
-    GetTemp(&ht);
-    
-    // Update State Variables
-    if (ht.tempUpHit == LOW && ht.lastTempUpHit != ht.tempUpHit)
-    {
-      ht.setTemp++;
-    }
-    else if (ht.tempDownHit == LOW && ht.lastTempDownHit != ht.tempDownHit) 
-    {
-      ht.setTemp--;
-    }
+//    GetButtonStates(&ht);
+//    // Read current temp
+//
+//    float temperature = getTemp(ds);
+//    
+//    
+//    // Update State Variables
+//    if (ht.tempUpHit == LOW && ht.lastTempUpHit != ht.tempUpHit)
+//    {
+//      ht.setTemp++;
+//    }
+//    else if (ht.tempDownHit == LOW && ht.lastTempDownHit != ht.tempDownHit) 
+//    {
+//      ht.setTemp--;
+//    }
   
   
-  
-  
+ 
   // if there's no net connection, but there was one last time
   // through the loop, then stop the client:
   if (!client.connected() && lastConnected) {
@@ -147,18 +153,24 @@ void loop() {
   // your last connection, then connect again and send data:
   if(!client.connected() && (millis() - lastConnectionTime > postingInterval)) {
 
+    Serial.println("starting HTTP request  \n\n");
     httpRequest();
     // note the time that the connection was made:
-    lastConnectionTime = millis();
+    
+    Serial.println("HTTPrequest complete \n\n");
 //    Serial.print("client avail main loop:  ");
 //    Serial.println(client.available());
     
-    delay(100);
-    parseReturnCsv(client, &ht);
+//    pullStateFromServer(client, &ht);
+    pullStateFromServer();
+    Serial.println("Parse complete \n\n");
     delay(100);
     
     client.flush();  //flush out anything left in buffer for whatever reason
-
+//    delay(100);
+    lastConnectionTime = millis();
+    
+    
   }
 
   // store the state of the connection for next time through the loop:
@@ -167,16 +179,97 @@ void loop() {
   
   //======================================================                
   //REALTIME CONTROLLER. 10HZ LOOP
-  SetHeater(&ht);
-  //======================================================
-    
-  //UPDATE USER INFTERFACE. 10Hz LOOP
-  UpdateUserInterface(&ht);  
-  
+//  SetHeater(&ht);
+//  //======================================================
+//    
+//  //UPDATE USER INFTERFACE. 10Hz LOOP
+//  UpdateUserInterface(&ht);  
+//  
   
 }
+
+
+
+
+
 //================================================================================
-//================================================================================
+void pullStateFromServer() {
+//  Serial.println("Parse CSV");
+//  Serial.println(client.available()); 
+  
+  currentLine = "";
+  
+  if (client.available()) {
+    delay(200);
+    //read in entire request
+    
+    while (client.available()) {
+      char inChar = client.read();
+      currentLine += inChar; 
+    }
+
+    if (debug) {
+      Serial.println('\n\n');
+      Serial.println("================================================================= RETURNED FROM SERVER");
+      Serial.println(currentLine);
+      Serial.println("================================================================= RETURNED FROM SERVER");
+      Serial.println();
+    }
+    
+//    int startPos = currentLine.indexOf("\r\n\r\n");
+//    currentLine = currentLine.substring(startPos+4);
+//
+//    //    Serial.println("startPos");
+//    //    Serial.println(startPos);
+//    if (debug) {
+//      Serial.println("Substring: +++++++++++++++++++++++++++++++++");
+//      Serial.println(currentLine);
+//      Serial.println("+++++++++++++++++++++++++++++++++ end subtring: ");
+//      Serial.println();
+//    }
+//    
+//    // now begin GHETTO SHITTY parsing 
+//    startPos = currentLine.indexOf(',');
+//    String parseVal1 = currentLine.substring(0,startPos);
+//    
+//    //pop first value off of string
+//    currentLine = currentLine.substring(startPos+1);
+//    startPos = currentLine.indexOf(',');
+//    
+//    String parseVal2 = currentLine.substring(0,startPos);
+
+    //pop first value off of string
+//    currentLine = currentLine.substring(startPos+1);
+//    startPos = currentLine.indexOf(',');
+
+//    String parseVal3 = currentLine.substring(0,startPos);
+
+    
+//    Serial.print("parseVal1:   ");
+//    Serial.print(parseVal1);
+//    Serial.print("    parseVal2:   ");
+//    Serial.print(parseVal2);
+//    Serial.println();
+//
+//    ht->setTemp = parseVal1.toInt();
+//    Serial.print("set temp:  ");
+//    Serial.println(ht->setTemp);
+//
+//    if (parseVal2 == "1")
+//    {
+//      ht->heaterOn = true;
+//    }
+//    else {
+//      ht->heaterOn = false;
+//    }
+//
+//    Serial.print("heater on:  ");
+//    Serial.println(ht->heaterOn);  
+    
+
+  }
+  
+}
 
 
 
@@ -185,11 +278,12 @@ void loop() {
 //================================================================================
 // this method makes a HTTP connection to the server:
 void httpRequest() {
+  
   // if there's a successful connection:
   if (client.connect(server, 80)) {
     Serial.println("connecting...");
     // send the HTTP PUT request:
-    client.println("GET /arduino/sync?cur_temp=100 HTTP/1.1");
+    client.println("GET /arduino/sync?cur_temp=100&set_temp=10&is_on=true HTTP/1.1");
     client.println("Host: katyakrunktank.herokuapp.com");
     client.println("User-Agent: arduino-wifi");
     client.println("Connection: close");
@@ -223,6 +317,17 @@ void printWifiStatus() {
   Serial.print(rssi);
   Serial.println(" dBm");
 }
+
+
+
+
+
+
+
+
+
+
+
 
 //void parseReturnCsv(HotTub *ht) {
 //  
@@ -285,11 +390,6 @@ void printWifiStatus() {
 //
 //  }
 //}
-
-
-
-
-
 
 
 

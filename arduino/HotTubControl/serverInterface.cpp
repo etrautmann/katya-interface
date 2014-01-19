@@ -2,73 +2,19 @@
 #include <SPI.h>
 #include <WiFi.h>
 
-boolean debug = true;
 
-//================================================================================
-void parseReturnCsv(WiFiClient client, HotTub *ht) {
-//  Serial.println("Parse CSV");
-//  Serial.println(client.available()); 
-  
-  
-  if (client.available()) {
-    
-    //read in entire request
-    String currentLine = "";
-    while (client.available()) {
-      char inChar = client.read();
-      currentLine += inChar; 
-    }
-    
-    if (debug) {
-      Serial.println("String: ====================================================");
-      Serial.println(currentLine);
-      Serial.println("============================================End String: ");
-      Serial.println();
-    }
-    
-    int startPos = currentLine.indexOf("\r\n\r\n");
-    currentLine = currentLine.substring(startPos+4);
 
-    //    Serial.println("startPos");
-    //    Serial.println(startPos);
-    if (debug) {
-      Serial.println("Substring: +++++++++++++++++++++++++++++++++");
-      Serial.println(currentLine);
-      Serial.println("+++++++++++++++++++++++++++++++++ end subtring: ");
-      Serial.println();
-    }
-    
-    // now begin parsing 
-    startPos = currentLine.indexOf(',');
-    String parseVal1 = currentLine.substring(0,startPos);
-    String parseVal2 = currentLine.substring(startPos+1);
 
-    Serial.print("parseVal1:   ");
-    Serial.print(parseVal1);
-    Serial.print("    parseVal2:   ");
-    Serial.print(parseVal2);
-    Serial.println();
 
-    ht->setTemp = parseVal1.toInt();
-    Serial.print("set temp:  ");
-    Serial.println(ht->setTemp);
 
-    if (parseVal2 == "1")
-    {
-      ht->heaterOn = true;
-    }
-    else {
-      ht->heaterOn = false;
-    }
 
-    Serial.print("heater on:  ");
-    Serial.println(ht->heaterOn);  
-    
-    client.flush();
-  }
-  
-  
-}
+
+
+
+
+
+
+
 
 
 //================================================================================
@@ -80,7 +26,7 @@ void parseReturnJson(WiFiClient client, HotTub *ht) {
       char inChar = client.read();
       currentLine += inChar; 
     }
-    Serial.println("String: ====================================================");
+    Serial.println("================================================================= RETURNED FROM SERVER");
     Serial.println(currentLine);
     Serial.println("End String: ");
     Serial.println();
