@@ -16,19 +16,19 @@
 
 //Define hot tub state struct
 typedef struct HotTubs{
-   char  setTemp;
-   char  currentTemp;
-   char  heaterEnabled;
-   char  heaterOn;
-   char  serverConnected;
-   char  tempUpHit;
-   char  tempDownHit;
-   char  heaterEnableHit;
-   char  jetsOnHit;
-   char  lastTempUpHit;
-   char  lastTempDownHit;
-   char  lastHeaterEnableHit;
-   char  lastJetsOnHit;
+   int  setTemp;
+   int  currentTemp;
+   boolean  heaterEnabled;
+   boolean  heaterOn;
+   boolean  serverConnected;
+   boolean  tempUpHit;
+   boolean  tempDownHit;
+   boolean  heaterEnableHit;
+   boolean  jetsOnHit;
+   boolean  lastTempUpHit;
+   boolean  lastTempDownHit;
+   boolean  lastHeaterEnableHit;
+   boolean  lastJetsOnHit;
 } HotTub;
 
 #endif
